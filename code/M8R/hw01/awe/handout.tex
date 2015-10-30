@@ -1,0 +1,74 @@
+\author{Thomas Rapstine}
+\title{GPGN658: Seismic migration}{AWE}
+
+% ------------------------------------------------------------
+
+A constant-density acoustic wave equation implementation was modified by adding a term that accounts for varying density.  This term involves first derivatives in time and space of both the density and wavefield.  The first derivatives were implemented using finite difference computations in the same location of the code as the Laplacian of the wavefield was computed.  To illustrate the results wavefield snapshots and data are shown for the case of constant-density versus variable-density acoustic wave equation results.  A brief discussion is included in the caption of the figure results.  The code is included at the end of the document.
+
+
+% ------------------------------------------------------------
+
+% ------------------------------------------------------------
+\inputdir{exercise}
+% ------------------------------------------------------------
+\sideplot{wava}{width=\textwidth}{Source wavelet.}
+\multiplot{2}{vp,ro}{width=0.45\textwidth}{Velocity model (a) and density model (b).}
+\multiplot{3}{wa,we,wd}{width=0.45\textwidth}{The acoustic wavefield (a), the acoustic wavefield with varying density (b), and their difference (a)-(b).  We see that when the variable density wave equation is used, the wavefield reflects off the vertical density boundary.  Plotting the difference between the two wavefields, we see that the reflected wavefront (in the variable density case) mirrors the wavefront that passed through the density boundary (in the acoustic case).  We also see that the wavefronts have more-or-less the same wavelengths for both wavefields; even though they are passing through different densities.  This confirms concepts discussed in class, such as density can only cause the wavefield to reflect and can not influence the wavelength of the wavefield (unlike p-wave velocity).  It is also worth noting that the variable density acoustic wavefield is notably more complex than the constant density acoustic wavefield (for example it contains a triplication).}
+\multiplot{3}{da,de,dd}{width=0.45\textwidth}{The acoustic data (a), the variable density acoustic data (b), and their difference (a)-(b).  First, the data does not start at zero time because our source is buried at a depth of 0.5 km.  We observe an event in the data derived using an variable density acoustic wave equation that is not in the constant density acoustic data.  This event begins at 0.3 seconds and 1 km "offset".  The anomalous event shows to be moving from right to left, and is the wave reflected due to density contrast in the model.  We also observe that the amplitude of the primary reflection is dimmed beyond 1 km.  By subtracting the datasets we see that the dim nature of the primary reflector beyond 1 km is a result of the energy being reflected off the density contrast boundary.  This observation is a result of the wavefield observations in the previous wavefield images.}
+
+
+% ------------------------------------------------------------
+\newpage
+\section{Exercise}
+In this homework, you will write code for time-domain acoustic
+finite-differences modeling. This is one of the most basic programs
+employed in seismic imaging. I used in class for this program the name
+of ``Hello World!'' of seismic imaging. Everyone involved in seismic
+imaging must write this program once in their life. This is what you
+will do in this homework.
+
+Your assignment is to modify an acoustic finite-differences modeling
+program and compute wavefields and data recorded on the surface. You
+will use the constant-density and the variable-density acoustic
+wave-equations.
+
+\textbf{This is an individual assignment and absolutely no
+  collaboration on code is allowed}.
+\begin{enumerate}
+\item The program \texttt{AFDM.c} implements time-domain
+  finite-differences modeling for the constant-density acoustic
+  wave-equation. Your task is to add the density term to this
+  program. Refer to the course slides for details about what needs to
+  be added and where. Add comments in the code to indicate your
+  modifications.
+
+\item Run \texttt{scons view} after your code is modified. All figures
+  are rebuilt with your new code and displayed on screen.
+
+\item Run \texttt{scons lock} once you are satisfied with your
+  results. All figures are copied to the storage directory.
+
+\item Add comments to this document indicating the changes to the
+  simulated data and wavefields. Are your results expected? Describe
+  the data and wavefield figures indicating what the various events
+  represent.
+
+\item \texttt{cd awe}, run \texttt{scons handout.read} to build your
+  answer. A PDF file is constructed using your newly created figures
+  and modifications to the text. The modified code is automatically
+  added to the document.
+
+\end{enumerate}
+
+\newpage
+\section{AFDM.c}
+\tiny
+\lstinputlisting{exercise/AFDM.c}
+\normalsize
+\newpage
+\section{EFDM.c}
+\tiny
+\lstinputlisting{exercise/EFDM.c}
+\normalsize
+
+

@@ -1,0 +1,37 @@
+1.8-svn	sfspike	M8R/mwe_documents/data:	trap@wl-dhcp-236-82.Mines.EDU	Fri Sep 11 16:13:58 2015
+
+	o1=0
+	label1="Time"
+	data_format="native_float"
+	esize=4
+	in="stdout"
+	unit1="s"
+	d1=0.004
+	n1=201
+	in="stdin"
+
+1.8-svn	sfnoise	M8R/mwe_documents/data:	trap@wl-dhcp-236-82.Mines.EDU	Fri Sep 11 16:13:58 2015
+
+	data_format="native_float"
+	esize=4
+	in="stdout"
+	in="stdin"
+
+1.8-svn	sfbandpass	M8R/mwe_documents/data:	trap@wl-dhcp-236-82.Mines.EDU	Fri Sep 11 16:13:58 2015
+
+	data_format="native_float"
+	esize=4
+	in="/SCRATCH/M8R/mwe_documents/data/noise.rsf@"
+1.8-svn	sffft1	M8R/mwe_documents/data:	trap@wl-dhcp-236-82.Mines.EDU	Fri Sep 11 16:13:58 2015
+
+	o1=0
+	label1="Frequency"
+	data_format="native_complex"
+	fft_n1=201
+	esize=8
+	fft_o1=0
+	in="/SCRATCH/M8R/mwe_documents/data/fourier.rsf@"
+	fft_label1="Time"
+	unit1="Hz"
+	d1=1.23762
+	n1=102

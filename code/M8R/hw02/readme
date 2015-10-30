@@ -1,0 +1,20 @@
+Note that the density reflection does not work unless you add
+cden=n to the def awefd() in fdm.py as done below.  Make sure that
+the version of fdm.py has this definition of awefd();
+
+def awefd(odat,owfl,idat,velo,dens,sou,rec,custom,par):
+    par['fdcustom'] = custom
+    
+    Flow([odat,owfl],[idat,velo,dens,sou,rec],
+         '''
+         awefd2d cden=n
+         ompchunk=%(ompchunk)d ompnth=%(ompnth)d 
+         verb=y free=n snap=%(snap)s jsnap=%(jsnap)d
+         dabc=%(dabc)s nb=%(nb)d
+         vel=${SOURCES[1]}
+         den=${SOURCES[2]}
+         sou=${SOURCES[3]}
+         rec=${SOURCES[4]}
+         wfl=${TARGETS[1]}
+         %(fdcustom)s
+         ''' % par)

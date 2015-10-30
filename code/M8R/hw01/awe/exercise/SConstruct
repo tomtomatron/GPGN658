@@ -1,0 +1,128 @@
+## 
+# GPGN658 - acoustic FD modeling 
+##
+
+from rsf.proj import *
+import fdmod
+
+proj = Project()
+#Note that the *.c files are a dependency
+#Note that more complicated compiling calls
+#make helloworld.cpp and try this out
+proj.Program('AFDM.x',Split('AFDM.c fdutil.c omputil.c'),CCFLAGS='-fopenmp')
+proj.Program('EFDM.x',Split('EFDM.c fdutil.c omputil.c'),CCFLAGS='-fopenmp')
+
+# ------------------------------------------------------------
+par = dict(
+    nx=1001, ox=0, dx=0.002,  lx='x', ux='km',
+    nz=1001, oz=0, dz=0.002,  lz='z', uz='km',
+    nt=4000, ot=0, dt=0.0002, lt='t', ut='s',
+    kt=150,nb=250,jsnap=100,frq=45
+    )
+   #original nt=4000, ot=0, dt=0.0002, lt='t', ut='s',
+
+fdmod.param(par)
+
+# ------------------------------------------------------------
+par['kz']=2./3.*par['nz']
+
+# ------------------------------------------------------------
+fdmod.wavelet('wav_',par['frq'],par)
+# ------------------------------------------------------------
+# acoustic source
+Flow(  'wava','wav_','transp')
+Result('wava','transp |' + fdmod.waveplot('',par))
+
+# ------------------------------------------------------------
+# source/receiver coordinates
+fdmod.point('ss',
+            par['ox']+(par['nx']/4*par['dx']),
+            par['oz']+(par['nz']/4*par['dz']),par)
+fdmod.horizontal('rr',0,par)
+
+Plot('rr',fdmod.rrplot('',par))
+Plot('ss',fdmod.ssplot('',par))
+
+# ------------------------------------------------------------
+Flow('zero',None,
+     '''
+     spike nsp=1 mag=0.0
+     n1=%(nz)d o1=%(oz)g d1=%(dz)g 
+     n2=%(nx)d o2=%(ox)g d2=%(dx)g |
+     put label1=%(lz)s label2=%(lx)s unit1=%(uz)s unit2=%(ux)s
+     ''' % par)
+
+# P velocity (km/s)
+Flow('vp',None,
+     '''
+     spike nsp=1 mag=1.0
+     n1=%(nz)d o1=%(oz)g d1=%(dz)g k1=1 l1=500
+     n2=%(nx)d o2=%(ox)g d2=%(dx)g |
+     put label1=%(lz)s label2=%(lx)s unit1=%(uz)s unit2=%(ux)s |
+     add add=2.0
+     ''' % par)
+
+# Density (kg/km^3)
+Flow('ro',None,
+     '''
+     spike nsp=1 mag=1000000
+     n1=%(nz)d o1=%(oz)g d1=%(dz)g
+     n2=%(nx)d o2=%(ox)g d2=%(dx)g k2=1 l2=500 |
+     put label1=%(lz)s label2=%(lx)s unit1=%(uz)s unit2=%(ux)s |
+     add add=1800000
+     ''' % par)
+
+Plot('vp',fdmod.cgrey('bias=3       pclip=100',par))
+Plot('ro',fdmod.cgrey('bias=2800000 pclip=100',par))
+
+Result('vp','vp rr ss','Overlay')
+Result('ro','ro rr ss','Overlay')
+
+# ------------------------------------------------------------
+# acoustic modeling
+Flow(['da','wa'],['wava','vp','ro','ss','rr','AFDM.x'],
+         '''
+         ./AFDM.x
+         verb=y free=n snap=%(snap)s jsnap=%(jsnap)d
+         nb=%(nb)d dabc=y
+         vel=${SOURCES[1]}
+         den=${SOURCES[2]}
+         sou=${SOURCES[3]}
+         rec=${SOURCES[4]}
+         wfl=${TARGETS[1]}
+         ''' % par)
+
+# elastic modeling TODO
+Flow(['de','we'],['wava','vp','ro','ss','rr','EFDM.x'],
+         '''
+         ./EFDM.x
+         verb=y free=n snap=%(snap)s jsnap=%(jsnap)d
+         nb=%(nb)d dabc=y
+         vel=${SOURCES[1]}
+         den=${SOURCES[2]}
+         sou=${SOURCES[3]}
+         rec=${SOURCES[4]}
+         wfl=${TARGETS[1]}
+         ''' % par)
+
+Flow('dd',['da','de'],'math x=${SOURCES[0]} y=${SOURCES[1]} output=x-y')
+
+#wavefield too big window and subtract for differences
+Flow('waw','wa','window n3=1 f3=20')
+Flow('wew','we','window n3=1 f3=20')
+Flow('wd' ,['waw','wew'],'math x=${SOURCES[0]} y=${SOURCES[1]} output=x-y')
+
+
+
+Result('da','transp |'           + fdmod.dgrey('',par))
+Result('wa','window n3=1 f3=20|' + fdmod.wgrey('',par))
+Result('de','transp |'           + fdmod.dgrey('',par))
+Result('we','window n3=1 f3=20|' + fdmod.wgrey('',par))
+Result('dd','transp |'           + fdmod.dgrey('',par))
+Result('wd',                       fdmod.wgrey('',par))
+
+Result('wamovie','wa',fdmod.wgrey('pclip=99',par))
+Result('wemovie','we',fdmod.wgrey('pclip=99',par))
+
+    
+End()
