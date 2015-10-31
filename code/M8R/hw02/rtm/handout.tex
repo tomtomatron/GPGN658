@@ -1,18 +1,20 @@
-\author{Carl Friedrich Gauss}
+\author{Thomas Rapstine}
 \title{GPGN658: Seismic migration}{RTM}
 
-%question 1
-\multiplot{2}{R1bd,R1bn}{width=0.45\textwidth}{Images from CIC using a constant density model with and without direct arrival in data.)
-\multiplot{2}{R2bd,R2bn}{width=0.45\textwidth}{Images from deconvolution using a constant density model with and without direct arrival in data.)
-
-%question 2
-\multiplot{2}{R1ad,R1an}{width=0.45\textwidth}{Images from CIC using a vertically varying density model with and without direct arrival in data.)
-\multiplot{2}{R2ad,R2an}{width=0.45\textwidth}{Images from deconvolution using a constant density model with and without direct arrival in data.)
 
 
 % ------------------------------------------------------------
 \inputdir{exercise}
 % ------------------------------------------------------------
+
+%question 1
+\multiplot{2}{Rb01,Rb11}{width=0.45\textwidth}{Images from CIC using a constant density model with and without direct arrival in data.}
+%\multiplot{2}{Rb02,Rb12}{width=0.45\textwidth}{Images from deconvolution using a constant density model with and without direct arrival in data.}
+
+%question 2
+\multiplot{2}{Ra01,Ra11}{width=0.45\textwidth}{Images from CIC using a vertically varying density model with and without direct arrival in data.}
+%\multiplot{2}{Ra01,Ra12}{width=0.45\textwidth}{Images from deconvolution using a vertically varying density model with and without direct arrival in data.}
+
 \sideplot{vo}{width=\textwidth}{Velocity.}
 \sideplot{ra}{width=\textwidth}{Density.}
 \sideplot{dr0}{width=\textwidth}{Data w/ direct arrival.}

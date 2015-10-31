@@ -154,7 +154,8 @@ Result('wb1_reverse','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
 
 # ------------------------------------------------------------
 ## Imaging condition 1: correlation (CIC) TODO
-
+# note that "ww" has vertically varying density contrast
+# note that "wo" has constant density contrast
 # modifying ompchunk doesn't seem to speed things up . . . why?
 
 #testing xcorr
@@ -163,15 +164,15 @@ Result('Rtemp',fdm.wgrey('pclip=99.9',par))
 
 ### varying density
 #### with direct arrival
-#Flow('Ra01','ww','sftcor ur=${SOURCES[0]} ompchunk=1')
+Flow('Ra01',['ww','wa0_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 #### without direct arrival
-#Flow('Ra11','ww','sftcor ur=${SOURCES[0]} ompchunk=1')
+Flow('Ra11',['ww','wa1_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 
-### varying density
+### constant density
 #### with direct arrival
-#Flow('Rb01','ww','sftcor ur=${SOURCES[0]} ompchunk=1')
+Flow('Rb01',['wo','wb0_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 #### without direct arrival
-#Flow('Rb11','ww','sftcor ur=${SOURCES[0]} ompchunk=1')
+Flow('Rb11',['wo','wb1_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 
 
 # ------------------------------------------------------------
@@ -190,26 +191,26 @@ Result('Rtemp',fdm.wgrey('pclip=99.9',par))
 # Placeholder results
 
 #varying density
-Flow('Ra01','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra01','Rtemp','math x=${SOURCES[0]} output=x')
 Flow('Ra02','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Ra11','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra11','Rtemp','math x=${SOURCES[0]} output=x')
 Flow('Ra12','Rtemp','math x=${SOURCES[0]} output=x')
 
 #constant density
-Flow('Rb01','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb01','Rtemp','math x=${SOURCES[0]} output=x')
 Flow('Rb02','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Rb11','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb11','Rtemp','math x=${SOURCES[0]} output=x')
 Flow('Rb12','Rtemp','math x=${SOURCES[0]} output=x')
 
 
-Result('Ra01',fdm.wgrey('',par))
-Result('Ra02',fdm.wgrey('',par))
-Result('Ra11',fdm.wgrey('',par))
-Result('Ra12',fdm.wgrey('',par))
-Result('Rb01',fdm.wgrey('',par))
-Result('Rb02',fdm.wgrey('',par))
-Result('Rb11',fdm.wgrey('',par))
-Result('Rb12',fdm.wgrey('',par))
+Result('Ra01',fdm.wgrey('pclip=99.9',par))
+Result('Ra02',fdm.wgrey('pclip=99.9',par))
+Result('Ra11',fdm.wgrey('pclip=99.9',par))
+Result('Ra12',fdm.wgrey('pclip=99.9',par))
+Result('Rb01',fdm.wgrey('pclip=99.9',par))
+Result('Rb02',fdm.wgrey('pclip=99.9',par))
+Result('Rb11',fdm.wgrey('pclip=99.9',par))
+Result('Rb12',fdm.wgrey('pclip=99.9',par))
 
 
 End()
