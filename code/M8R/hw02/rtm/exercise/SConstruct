@@ -153,38 +153,40 @@ Result('wb0_reverse','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
 Result('wb1_reverse','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
 
 # ------------------------------------------------------------
-## Imaging condition 1: correlation (CIC) TODO
+## Imaging condition 1: Homebrew correlation (CIC) 
 # note that "ww" has vertically varying density contrast
-# note that "wo" has constant density contrast
-# modifying ompchunk doesn't seem to speed things up . . . why?
+# note that "wo" has a constant density contrast
+# modifying ompchunk doesn't seem to speed things up . . . why?...
 
-#testing xcorr
-Flow('Rtemp','ww','sftcor ur=${SOURCES[0]} ompchunk=1')
-Result('Rtemp',fdm.wgrey('pclip=99.9',par))
-
-### varying density
-#### with direct arrival
+#### varying density
+###### with direct arrival
 Flow('Ra01',['ww','wa0_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
-#### without direct arrival
+###### without direct arrival
 Flow('Ra11',['ww','wa1_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 
-### constant density
-#### with direct arrival
+##### constant density
+####### with direct arrival
 Flow('Rb01',['wo','wb0_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
-#### without direct arrival
+####### without direct arrival
 Flow('Rb11',['wo','wb1_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 
 
 # ------------------------------------------------------------
-## Imaging condition 2: deconvolution TODO
+## Imaging condition 2: CIC using sfcicold2d 
+#### *** sfcicop2d was seg-faulting
 
-### with direct arrival
-##### constant density
 ##### varying density
+####### with direct arrival
+Flow('Ra02',['ww','wa0'],'sfcicold2d ur=${SOURCES[1]}')
+####### without direct arrival
+Flow('Ra12',['ww','wa1'],'sfcicold2d ur=${SOURCES[1]}')
 
-### without direct arrival
 ##### constant density
-##### varying density
+####### with direct arrival
+Flow('Rb02',['wo','wb0'],'sfcicold2d ur=${SOURCES[1]}')
+#Flow('Rb02',['wo','wb0_reverse'],'sfcicold2d ur=${SOURCES[1]} isreversed=y')
+####### without direct arrival
+Flow('Rb12',['wo','wb1'],'sfcicold2d ur=${SOURCES[1]}')
 
 # ------------------------------------------------------------
 
@@ -192,17 +194,17 @@ Flow('Rb11',['wo','wb1_reverse'],'sftcor ur=${SOURCES[1]} ompchunk=1')
 
 #varying density
 #Flow('Ra01','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Ra02','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra02','Rtemp','math x=${SOURCES[0]} output=x')
 #Flow('Ra11','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Ra12','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra12','Rtemp','math x=${SOURCES[0]} output=x')
 
 #constant density
 #Flow('Rb01','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Rb02','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb02','Rtemp','math x=${SOURCES[0]} output=x')
 #Flow('Rb11','Rtemp','math x=${SOURCES[0]} output=x')
-Flow('Rb12','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb12','Rtemp','math x=${SOURCES[0]} output=x')
 
-
+#plot
 Result('Ra01',fdm.wgrey('pclip=99.9',par))
 Result('Ra02',fdm.wgrey('pclip=99.9',par))
 Result('Ra11',fdm.wgrey('pclip=99.9',par))
