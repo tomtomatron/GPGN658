@@ -1,0 +1,13 @@
+1.8-svn	sfmath	hw02/rtm/exercise:	trap@dhcp20-159.Mines.EDU	Mon Nov  2 08:58:26 2015
+
+	x2=1
+	d2=0.005
+	n2=601
+	o1=0
+	o2=0
+	data_format="native_float"
+	esize=4
+	in="/SCRATCH/hw02/rtm/exercise/vo.rsf@"
+	x1=0
+	d1=0.005
+	n1=201
