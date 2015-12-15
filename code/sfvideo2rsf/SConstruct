@@ -1,0 +1,62 @@
+from rsf.proj import *
+import wplot
+import fdmod 
+sys.path.append('../')
+sys.path.append('../DATA/')
+import pyr
+
+# A demo of using sfvideo2rsf
+codedir='../'
+datadir='../../DATA/'
+
+proj = Project()
+
+#from Tim Lupo for OpenCV 
+frmpath=['/usr/local/lib']
+hedpath=['/usr/local/include']
+libpath=['/Users/thomasrapstine/opencv-3.0.0/build/lib']
+
+#for boost
+libpath.append('/opt/local/lib')
+
+#OpenCV
+libs=['opencv_core']
+libs.append('opencv_highgui')
+libs.append('opencv_imgproc')
+libs.append('opencv_videoio')
+libs.append('opencv_imgcodecs')
+libs.append('boost_timer-mt')
+
+#M8R with C++
+libs.append('rsf++')
+
+#Works, but try avoiding modifying project flags directly
+#proj.Program('go_mm.x',['main.cpp','utilities.cpp','test.cpp'],CXXFLAGS='',CXX='g++',LIBS=libs,LIBPATH=libpath,CXXPATH=hedpath)
+
+#trying to add flags to the project directly
+proj.Append(LIBPATH=libpath)
+proj.Append(LIBS=libs)
+proj.Append(CXXPATH=hedpath)
+
+
+# compile programs 
+proj.Program('video2rsf.x',[codedir+'video2rsf.cpp',codedir+'utilities.cpp'])
+proj.Program('go_mm.x',[codedir+'/main.cpp',codedir+'/utilities.cpp',codedir+'test.cpp'])
+
+# initialize some parameters
+par = dict(
+    nx=432, ox=0.0, dx=1.0,     lx='x', ux='pixels',
+    nz=192, oz=0.0, dz=1.0,     lz='z', uz='pixels',
+    nt=300, ot=0.0, dt=29.97,   lt='t', ut='s',
+    )
+fdmod.param(par)
+wplot.param(par)
+
+# run video2rsf code
+Flow(['band1','band2','band3'],'video2rsf.x','./video2rsf.x '+datadir+'guitar.mp4 verb=n band1=${TARGETS[0]} band2=${TARGETS[1]} band3=${TARGETS[2]}')
+Result('band1', wplot.igrey2d('',par))
+Result('band2', wplot.igrey2d('',par))
+Result('band3', wplot.igrey2d('',par))
+
+End()
+

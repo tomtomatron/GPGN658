@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/MacPorts 2015_3) (preloaded format=pdflatex 2015.9.1)  11 SEP 2015 16:24
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/MacPorts 2015_7) (preloaded format=pdflatex 2015.12.2)  10 DEC 2015 16:01
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -6,7 +6,7 @@ entering extended mode
 (./segabs.ltx
 LaTeX2e <2015/01/01>
 Babel <3.9l> and hyphenation patterns for 44 languages loaded.
-(/Users/trap/Library/texmf/tex/latex/seg/segabs.cls
+(/Users/thomasrapstine/Library/texmf/tex/latex/seg/segabs.cls
 Document Class: segabs 2005/04/03 v1.0 SEG expanded abstract
 (/opt/local/share/texmf-texlive/tex/latex/base/ifthen.sty
 Package: ifthen 2014/09/29 v1.1c Standard LaTeX ifthen package (DPC)
@@ -34,7 +34,7 @@ LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
 (Font)                  OMX/cmex/m/n --> OMX/cmex/m/n on input line 48.
 
-(/Users/trap/Library/texmf/tex/latex/seg/seg.sty
+(/Users/thomasrapstine/Library/texmf/tex/latex/seg/seg.sty
 (/opt/local/share/texmf-texlive/tex/generic/oberdiek/ifpdf.sty
 Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
 Package ifpdf Info: pdfTeX in PDF mode is detected.
@@ -319,12 +319,12 @@ Package caption Info: subfig package v1.3 is loaded.
 Package caption Info: listings package is loaded.
 Package caption Info: End \AtBeginDocument code.
 \c@lstlisting=\count129
-LaTeX Font Info:    Try loading font information for U+msa on input line 28.
+LaTeX Font Info:    Try loading font information for U+msa on input line 29.
 
 (/opt/local/share/texmf-texlive/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 28.
+LaTeX Font Info:    Try loading font information for U+msb on input line 29.
 
 (/opt/local/share/texmf-texlive/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -332,27 +332,27 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 <data/Fig/noise.pdf, id=1, 792.80193pt x 640.31218pt>
 File: data/Fig/noise.pdf Graphic file (type pdf)
  <use data/Fig/noise.pdf>
-Package pdftex.def Info: data/Fig/noise.pdf used on input line 43.
+Package pdftex.def Info: data/Fig/noise.pdf used on input line 41.
 (pdftex.def)             Requested size: 211.3883pt x 170.72734pt.
 
 <data/Fig/spectra.pdf, id=2, 787.74298pt x 640.31218pt>
 File: data/Fig/spectra.pdf Graphic file (type pdf)
 
 <use data/Fig/spectra.pdf>
-Package pdftex.def Info: data/Fig/spectra.pdf used on input line 44.
+Package pdftex.def Info: data/Fig/spectra.pdf used on input line 42.
 (pdftex.def)             Requested size: 211.3883pt x 171.82162pt.
 File: data/Fig/noise.pdf Graphic file (type pdf)
  <use data/Fig/noise.pdf>
-Package pdftex.def Info: data/Fig/noise.pdf used on input line 46.
+Package pdftex.def Info: data/Fig/noise.pdf used on input line 44.
 (pdftex.def)             Requested size: 211.3883pt x 170.72734pt.
 File: data/Fig/spectra.pdf Graphic file (type pdf)
  <use data/Fig/spectra.pdf>
-Package pdftex.def Info: data/Fig/spectra.pdf used on input line 46.
+Package pdftex.def Info: data/Fig/spectra.pdf used on input line 44.
 (pdftex.def)             Requested size: 211.3883pt x 171.82162pt.
 File: data/Fig/noise.pdf Graphic file (type pdf)
 
 <use data/Fig/noise.pdf>
-Package pdftex.def Info: data/Fig/noise.pdf used on input line 51.
+Package pdftex.def Info: data/Fig/noise.pdf used on input line 49.
 (pdftex.def)             Requested size: 211.3883pt x 170.72734pt.
  (./segabs.bbl [1{/opt/local/var/db/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
@@ -370,8 +370,8 @@ LaTeX Warning: There were multiply-defined labels.
  ) 
 Here is how much of TeX's memory you used:
  5346 strings out of 494185
- 77836 string characters out of 6156889
- 143492 words of memory out of 5000000
+ 77886 string characters out of 6156888
+ 142492 words of memory out of 5000000
  8586 multiletter control sequences out of 15000+600000
  10000 words of font info for 37 fonts, out of 8000000 for 9000
  430 hyphenation exceptions out of 8191
@@ -383,7 +383,7 @@ re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr6.pfb></opt/local/share/texm
 f-texlive/fonts/type1/public/amsfonts/cm/cmr9.pfb></opt/local/share/texmf-texli
 ve/fonts/type1/public/amsfonts/cm/cmti10.pfb></opt/local/share/texmf-texlive/fo
 nts/type1/public/amsfonts/cm/cmti9.pfb>
-Output written on segabs.pdf (3 pages, 95770 bytes).
+Output written on segabs.pdf (3 pages, 95141 bytes).
 PDF statistics:
  48 PDF objects out of 1000 (max. 8388607)
  33 compressed objects within 1 object stream

@@ -1,0 +1,347 @@
+\title{Can multi-scale image pyramid processing concepts improve migration results?}
+\author{Thomas Rapstine}
+\institute{GPGN658 Fall 2015\\ Colorado School of Mines}
+\date{\today}
+
+\newcommand\FontSm{\fontsize{10pt}{5.0}\selectfont}
+\newcommand\FontMd{\fontsize{14pt}{5.0}\selectfont}
+\newcommand\FontLg{\fontsize{14pt}{5.0}\selectfont}
+
+\maketitle
+\inputdir{experiment}
+
+\begin{frame} \frametitle{Agenda}
+  \FontMd
+  \begin{centering}
+    Motivation \\
+    \vspace{0.3in}
+    Project objectives  \\
+    \vspace{0.3in}
+    Theory \\
+    \vspace{0.3in}
+    Results \\
+  \end{centering}
+\end{frame}
+
+\begin{frame} \frametitle{Motivation}
+  \FontMd
+  \begin{centering}
+    \vspace{0.4in}
+    Image pyramids decompose by scale \\ 
+    \vspace{0.4in}
+    Backscattering artifacts are obnoxious long wavelength features\\ 
+    \vspace{0.4in}
+    Can image pyramids be used to target and remove backscattering artifacts?\\ 
+  \end{centering}
+\end{frame}
+
+\begin{frame} \frametitle{Project objectives}
+  \FontMd
+  \begin{enumerate}
+    \vspace{0.6in}
+    \item Analyze migrated results using image pyramids 
+    \vspace{0.6in}
+    \item Migrated image pyramids levels independently 
+    \vspace{0.6in}
+    \item Propose and test new multi-scale imaging condition 
+  \end{enumerate}
+\end{frame}
+
+\begin{frame} \frametitle{Results}
+  \FontMd
+  \begin{enumerate}
+    \item CIC then decompose
+    \vspace{0.6in}
+    \item Decompose then CIC 
+    \vspace{0.6in}
+    \item Multiscale imaging condition application 
+  \end{enumerate}
+\end{frame}
+
+\begin{frame} \frametitle{Modeling assumptions}
+  \FontMd
+  \begin{itemize}
+    \vspace{0.6in}
+    \item Acoustic variable density wave equation 
+    \vspace{0.6in}
+    \item Smoothly varying media
+    \vspace{0.6in}
+    \item Finite differences used for implementation 
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame} \frametitle{Building an image pyramid theory}
+  \FontMd
+  \begin{enumerate}
+    \vspace{0.4in}
+    \item Begin with an image 
+    \vspace{0.4in}
+    \item Smooth image 
+    \vspace{0.4in}
+    \item Discard even rows and columns 
+    \vspace{0.4in}
+    \item Repeat 1-3 until resulting image is size 1-by-1 
+  \end{enumerate}
+\end{frame}
+
+\begin{frame} \frametitle{Image pyramids size is manageable}
+  \begin{equation}
+  N^2\left[\dfrac{1}{4}+\dfrac{1}{4^2}+\hdots+\dfrac{1}{4^P}+\right] = \pause N^2\sum_{k=0}^{P} \left(\dfrac{1}{4}\right)^k \pause \leq \dfrac{4}{3}N^2
+  \end{equation}
+\end{frame}
+
+
+\begin{frame} \frametitle{Conventional imaging condition (CIC)}
+
+\begin{equation} \label{eqn:cic}
+\mathbf{R}(\mathbf{x})=\sum_t {\mathbf{W}_s(\mathbf{x},t)\mathbf{W}_r(\mathbf{x},t)}
+\end{equation}
+
+\centering
+\begin{itemize}
+\item $\mathbf{x}$ space coordinates 
+\item $t$ time coordinate 
+\item $\mathbf{W}_s$ source wavefield
+\item $\mathbf{W}_r$ receiver wavefield
+\item $\mathbf{R}(\mathbf{x})$ migrated image 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame} \frametitle{Conventional imaging condition (CIC) on pyramid levels}
+
+\begin{equation} \label{eqn:cic}
+\hat{\mathbf{R}}_1(\mathbf{x},\mathbf{l})=\sum_t {\mathbf{W}_s(\mathbf{x},t,\mathbf{l})\mathbf{W}_r(\mathbf{x},t,\mathbf{l})}
+\end{equation}
+
+\centering
+\begin{itemize}
+\item $\mathbf{x}$ space coordinates 
+\item $t$ time coordinate 
+\item $\mathbf{W}_s$ source wavefield
+\item $\mathbf{W}_r$ receiver wavefield
+\item $\hat{\mathbf{R}}_1(\mathbf{x},\mathbf{l})$ migrated image for all levels
+\end{itemize}
+
+\end{frame}
+
+
+
+
+%TODO: model slide
+% level 1 comparison
+\begin{frame} \frametitle{Model structure}
+  \begin{columns}[t]
+    \column{.5\textwidth} 
+    \plot{vo}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{velocity model}
+    \column{.5\textwidth} 
+    \plot{ra}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{density model}
+  \end{columns}
+\end{frame}
+
+% level 1 comparison
+\begin{frame} \frametitle{Level 1 comparison}
+  \begin{columns}[t]
+    \column{.5\textwidth} 
+    \plot{R_cic_l01_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{CIC $\rightarrow$ pyramid}
+    \column{.5\textwidth} 
+    \plot{R_m_l01_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{pyramid $\rightarrow$ CIC}
+  \end{columns}
+\end{frame}
+
+% level 2 comparison
+\begin{frame} \frametitle{Level 2 comparison}
+  \begin{columns}[t]
+    \column{.5\textwidth} 
+    \plot{R_cic_l02_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{CIC $\rightarrow$ pyramid}
+    \column{.5\textwidth} 
+    \plot{R_m_l02_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{pyramid $\rightarrow$ CIC}
+  \end{columns}
+\end{frame}
+
+% level 3 comparison
+\begin{frame} \frametitle{Level 3 comparison}
+  \begin{columns}[t]
+    \column{.5\textwidth} 
+    \plot{R_cic_l03_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{CIC $\rightarrow$ pyramid}
+    \column{.5\textwidth} 
+    \plot{R_m_l03_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{pyramid $\rightarrow$ CIC}
+  \end{columns}
+\end{frame}
+
+% level 4 comparison
+\begin{frame} \frametitle{Level 4 comparison}
+  \begin{columns}[t]
+    \column{.5\textwidth} 
+    \plot{R_cic_l04_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{CIC $\rightarrow$ pyramid}
+    \column{.5\textwidth} 
+    \plot{R_m_l04_u}{width=\textwidth}{}
+    \vspace{-0.15in}
+    \centering{pyramid $\rightarrow$ CIC}
+  \end{columns}
+  \pause
+  \vspace{0.2in}
+  \centering{Building and collapsing pyramid is a nonlinear operation\\}
+  \pause
+  \vspace{0.2in}
+  \centering{What can we gain by comparing and combining wavefields by scale before applying CIC?}
+\end{frame}
+
+
+\begin{frame} \frametitle{Multi-scale imaging condition}
+
+\begin{equation} \label{eqn:cic}
+\hat{\mathbf{R}}_1(\mathbf{x},\mathbf{l})=\sum_t {\mathbf{W}_s(\mathbf{x},t,\mathbf{l})\mathbf{W}_r(\mathbf{x},t,\mathbf{l})}
+\end{equation}
+
+\pause
+
+\begin{equation} \label{eqn:ws_hat}
+\hat{\mathbf{W}}_s(\mathbf{x},t,l_i)=\beta_i\mathbf{W}_s(\mathbf{x},t,l_i)
+\end{equation}
+
+\pause
+
+\begin{equation} \label{eqn:wr_hat}
+\hat{\mathbf{W}}_r(\mathbf{x},t,l_i)=\beta_i\mathbf{W}_r(\mathbf{x},t,l_i)
+\end{equation}
+
+\pause
+
+\begin{equation} \label{eqn:cic_level_s}
+\begin{aligned}
+\hat{\mathbf{R}}_2(\mathbf{x},l_i)
+=&\sum_t {\hat{\mathbf{W}}_s(\mathbf{x},t,l_i)\hat{\mathbf{W}}_r(\mathbf{x},t,l_i)}\\
+\pause
+=&\beta_i^2\sum_t {\mathbf{W}_s(\mathbf{x},t,l_i)\mathbf{W}_r(\mathbf{x},t,l_i)}\\
+\pause
+=&\beta_i^2       \hat{\mathbf{R}}_1(\mathbf{x},l_i) 
+\end{aligned}
+\end{equation}
+
+\pause
+
+\centering
+\begin{itemize}
+\item $\beta_i$ scalar $\in$ (0,1) 
+\item $\sum_i\beta_i=1$ 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame} \frametitle{Multi-scale imaging condition}
+
+\begin{equation}
+\hat{\mathbf{R}}_2(\mathbf{x},l_i) = \beta_i^2\hat{\mathbf{R}}_1(\mathbf{x},l_i) 
+\end{equation}
+
+\pause
+
+\begin{equation}
+\beta_i^2 \rightarrow \alpha_i \in (-1,1)
+\end{equation}
+
+\pause
+
+\begin{equation}
+\hat{\mathbf{R}}_3(\mathbf{x})
+=\sum_{\alpha_i} {\alpha_i \hat{{\mathbf{R}}}_1(\mathbf{x},l_i)}
+\end{equation}
+
+\begin{itemize}
+\item Allows for truncation or subtraction of pyramid levels.
+\end{itemize}
+
+\end{frame}
+
+\pause
+
+\begin{frame} \frametitle{Multi-scale imaging condition results}
+  \begin{itemize}
+    \item 4 levels
+    \item Show results for truncating past certain level  
+    \item $\alpha_i=1$ for levels before truncation index
+    \item $\alpha_i=-1$ for levels after truncation index  
+  \end{itemize}
+\end{frame}
+
+% Truncated results
+\begin{frame} \frametitle{Migrated image: truncate at level 4 (include all levels)}
+  \begin{columns}[t]
+    \column{.8\textwidth} 
+    \plot{Rh_m_k4}{width=\textwidth}{}
+    \vspace{-0.15in}
+  \end{columns}
+\end{frame}
+\begin{frame} \frametitle{Migrated image: truncate at level 3}
+  \begin{columns}[t]
+    \column{.8\textwidth} 
+    \plot{Rh_m_k3}{width=\textwidth}{}
+    \vspace{-0.15in}
+  \end{columns}
+\end{frame}
+\begin{frame} \frametitle{Migrated image: truncate at level 2}
+  \begin{columns}[t]
+    \column{.8\textwidth} 
+    \plot{Rh_m_k2}{width=\textwidth}{}
+    \vspace{-0.15in}
+  \end{columns}
+\end{frame}
+
+\begin{frame} \frametitle{Migrated image: truncate at level 1 }
+  \begin{columns}[t]
+    \column{.8\textwidth} 
+    \plot{Rh_m_k1}{width=\textwidth}{}
+    \vspace{-0.15in}
+  \end{columns}
+\end{frame}
+
+
+
+\begin{frame} \frametitle{Conclusions}
+\begin{itemize}
+\item Backscattering not attenuated using proposed multi-scale imaging condition
+\item Sharpening of horizontal reflectors can occur at certain truncation levels
+\item Truncating levels can reverse polarity of image events 
+\item Future work: more complex image pyramids, other decompositions 
+\end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{Backup slides follow}
+\end{frame} 
+
+\begin{frame} \frametitle{Image pyramid theory}
+
+  \begin{equation} \label{eqn:pyrup}
+  \mathbf{G}_j=\mathbf{B}_{j-1}\mathbf{A}_{j-1}\mathbf{G}_{j-1}.
+  \end{equation}
+
+  \begin{equation} \label{eqn:pyrdown} 
+  \mathbf{G}_{j+1}=\mathbf{A}^T_{j}\mathbf{B}^T_{j}\mathbf{G}_{j}.
+  \end{equation}
+
+  \begin{equation} \label{eqn:residual}
+  \mathbf{L}_k = \mathbf{G}_k-\mathbf{G}_{k+1,1}.
+  \end{equation}
+
+\end{frame}

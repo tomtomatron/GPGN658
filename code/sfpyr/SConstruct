@@ -1,0 +1,241 @@
+from rsf.proj import *
+import wplot 
+import fdmod,math 
+sys.path.append('../')
+sys.path.append('../DATA/')
+import pyr
+
+# A demo of using sfpyr
+codedir='../'
+datadir='../../DATA/'
+
+proj = Project()
+
+#Compile C++ program
+#-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+#from Tim Lupo for OpenCV 
+frmpath=['/usr/local/lib']
+hedpath=['/usr/local/include']
+#libpath=['/Users/thomasrapstine/opencv-3.0.0/build/lib']
+libpath=['/Users/trap/opencv-3.0.0/build/lib']
+
+#for boost
+libpath.append('/opt/local/lib')
+
+#OpenCV
+libs=['opencv_core']
+libs.append('opencv_highgui')
+libs.append('opencv_imgproc')
+libs.append('opencv_videoio')
+libs.append('opencv_imgcodecs')
+libs.append('boost_timer-mt')
+
+#M8R with C++
+libs.append('rsf++')
+
+#add flags to project directly
+proj.Append(LIBPATH=libpath)
+proj.Append(LIBS=libs)
+proj.Append(CXXPATH=hedpath)
+proj.Program('sfpyr.x',[codedir+'sfpyr.cpp'])
+
+#Define test model domain parameters
+#-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+par = dict(
+    nx=1000 , ox=-50, dx=.1,  lx='x', ux='km',
+    nz=1000 , oz=-50, dz=.1,  lz='z', uz='km',
+    nt=4000, ot=0, dt=0.0002, lt='t', ut='s',
+    kt=150,nb=250,jsnap=100,frq=45
+    )
+paru= dict(
+    nx=2000 , ox=-50, dx=.05,  lx='x', ux='km',
+    nz=2000 , oz=-50, dz=.05,  lz='z', uz='km',
+    nt=4000, ot=0, dt=0.0002,  lt='t', ut='s',
+    kt=150,nb=250,jsnap=100,frq=45
+    )
+pard= dict(
+    nx=500 , ox=-50, dx=.2,  lx='x', ux='km',
+    nz=500 , oz=-50, dz=.2,  lz='z', uz='km',
+    nt=4000, ot=0, dt=0.0002, lt='t', ut='s',
+    kt=150,nb=250,jsnap=100,frq=45
+    )
+#wplot.param(par)
+wplot.param(par)
+wplot.param(paru)
+wplot.param(pard)
+
+#-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+
+#-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+# ---------------------------------------------------------------
+# Generate synthetic "image" 
+# ---------------------------------------------------------------
+
+Flow('gg',None,
+'''
+math output="exp(-((x1+20)*(x1+20)+(x2+20)*(x2+20))/(2*1.5*1.5))+ 
+             exp(-((x1-20)*(x1-20)+(x2-20)*(x2-20))/(2*2.5*2.5))- 
+             exp(-((x1-35)*(x1-35)+(x2-35)*(x2-45))/(2*5.5*5.5))+ 
+             exp(-((x1+30)*(x1+30)+(x2+30)*(x2+30))/(2*9.5*9.5))-
+             exp(-((x1+15)*(x1+15)+(x2+30)*(x2+30))/(2*9.5*9.5))+
+             exp(-((x1+20)*(x1+20)+(x2-20)*(x2-20))/(2*2.5*2.5))- 
+             exp(-((x1+20)*(x1+20)+(x2-20)*(x2-20))/(2*2.5*2.5))+ 
+             exp(-((x1+35)*(x1+35)+(x2-35)*(x2-45))/(2*5.5*5.5))- 
+             exp(-((x1   )*(x1   )+(x2   )*(x2   ))/(2*5.5*5.5))+ 
+             exp(-((x1-30)*(x1-30)+(x2+30)*(x2+30))/(2*9.5*9.5))"
+             n1=%(nz)d d1=%(dz)g o1=%(oz)g 
+             n2=%(nx)d d2=%(dx)g o2=%(ox)g 
+'''
+%par
+)
+
+Plot('gg',wplot.igrey2d('wantscalebar=y',par))
+Result('gg',wplot.igrey2d('wantscalebar=y',par))
+
+# ---------------------------------------------------------------
+# ---------------------------------------------------------------
+
+# ---------------------------------------------------------------
+# Generate synthetic "video" 
+# ---------------------------------------------------------------
+
+nf=10 #number of frames
+
+pari= dict(
+    nx=1024, ox=0, dx=0.1,  lx='x',ux='.',
+    nz=1024, oz=0, dz=0.1,  lz='z',uz='.'
+    )
+parv= dict(
+    nx=1024, ox=0, dx=0.1,  lx='x',ux='.',
+    nz=1024, oz=0, dz=0.1,  lz='z',uz='.',
+    nt=nf,   ot=0, dt=1,    lt='t',ut='.'
+    )
+fdmod.param(pari)
+
+
+hf=(nf-1)/2
+sf=0.01
+
+for i in range(nf):
+    tag = "%02d"%i #tag for file naming 
+
+    #modulate gaussian parameters using sine and cosine
+    a = 20 + sf*math.sin((i-hf)*4/hf*3.14)
+    b = 20 + sf*math.cos((i-hf)*4/hf*3.14)
+  
+    #form gaussian 
+    fdmod.gauss2d('gaus'+tag,
+                  pari['nx']*pari['dx']/2,
+                  pari['nz']*pari['dz']/2,
+                  a,b,pari)
+
+    #mask - convert to float - and smooth with Laplacian filter
+    Flow('disk'+tag,'gaus'+tag,
+        '''
+           mask min=0.225 | dd type=float |
+           smooth rect1=3 rect2=3 repeat=15 | laplac
+        ''')
+
+#write out disk "video"
+Flow('disk',['disk%02d'%i for i in range(nf)],
+     'cat axis=3 space=n ${SOURCES[1:%d]}'%nf)
+
+# ---------------------------------------------------------------
+# ---------------------------------------------------------------
+
+
+# ---------------------------------------------------------------
+# Run tests for (single and multilevel) upscaling and downscaling
+# ---------------------------------------------------------------
+
+#test upscaling
+Flow('lu',['gg','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=y
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+
+#test downscaling 
+Flow('ld',['gg','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=n
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+
+#view difference between original and downscaled image (must upscale to original size)
+Flow('ldu',['ld','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=y
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+Flow('ggmld',['gg','ldu'],'math x=${SOURCES[0]} y=${SOURCES[1]} output=x-y')
+
+# test laplacian
+Flow('lapi',['gg','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=y lap=y
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+
+
+#test video input
+#downscaling 
+Flow('vld',['disk','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=n
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+#upscaling 
+Flow('vlu',['vld','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=y
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+#difference
+Flow('diskmvlu',['disk','vlu'],'math x=${SOURCES[0]} y=${SOURCES[1]} output=x-y')
+
+# test laplacian
+Flow('lapv',['disk','sfpyr.x'],
+         '''
+         ./sfpyr.x
+         verb=n up=y lap=y
+         src=${SOURCES[0]}
+         dst=${TARGETS[0]}
+         ''' % par)
+
+
+#plot output (test)
+#images
+Plot('lu',wplot.igrey2d('wantscalebar=y',paru))
+Plot('ld',wplot.igrey2d('wantscalebar=y',pard))
+Plot('ggmld',wplot.igrey2d('wantscalebar=y',pard))
+Plot('lapi',wplot.igrey2d('wantscalebar=y',par))
+Result('lu',wplot.igrey2d('wantscalebar=y',paru))
+Result('ld',wplot.igrey2d('wantscalebar=y',pard))
+Result('ggmld',wplot.igrey2d('wantscalebar=y',pard))
+Result('lapi',wplot.igrey2d('wantscalebar=y',par))
+#video
+Result('disk',fdmod.cgrey('',pari))
+Result('vld',fdmod.cgrey('',pari))
+Result('diskmvlu',fdmod.cgrey('',pari))
+Result('lapv',fdmod.cgrey('wantscalebar=y',pari))
+
+End()
+
+

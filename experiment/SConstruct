@@ -1,0 +1,374 @@
+# Multiscale migration numerical experiment
+# GPGN658 - final project 
+# Perform RTM -> decompose image into n-scales
+# decompose Ws and Wr into various scales -> Perform n-RTM
+
+from rsf.proj import *
+import fdm
+import sys
+sys.path.append('../../MotionMag/MotionMag/CODE/')
+sys.path.append('../../MotionMag/MotionMag/DATA/')
+import pyr
+import fake_data 
+import wplot
+import numpy.random
+
+
+#--------------------------------------------------------------------------
+# Compile pyramid code
+#--------------------------------------------------------------------------
+
+proj = Project()
+codedir='../../MotionMag/MotionMag/CODE/'
+datadir='../../MotionMag/MotionMag/DATA/'
+
+#from Tim Lupo for OpenCV 
+frmpath=['/usr/local/lib']
+hedpath=['/usr/local/include']
+libpath=['/Users/thomasrapstine/opencv-3.0.0/build/lib']
+
+#for boost
+libpath.append('/opt/local/lib')
+
+
+#OpenCV
+libs=['opencv_core']
+libs.append('opencv_highgui')
+libs.append('opencv_imgproc')
+libs.append('opencv_videoio')
+libs.append('opencv_imgcodecs')
+libs.append('boost_timer-mt')
+
+#M8R with C++
+libs.append('rsf++')
+
+#trying to add flags to the project directly
+proj.Append(LIBPATH=libpath)
+proj.Append(LIBS=libs)
+proj.Append(CXXPATH=hedpath)
+
+# compile programs
+proj.Program('video2rsf.x',[codedir+'video2rsf.cpp',codedir+'utilities.cpp'])
+proj.Program('go_mm.x',[codedir+'main.cpp',codedir+'utilities.cpp',codedir+'test.cpp'])
+proj.Program('sfpyr.x',[codedir+'sfpyr.cpp'])
+
+
+
+
+# ------------------------------------------------------------
+par = dict(
+    nt=1500, ot=0, dt=0.001, lt='t', ut='s',     
+    nx=512,  ox=0, dx=0.005, lx='x', ux='km',
+    nz=256,  oz=0, dz=0.005, lz='z', uz='km',
+    kt=50,nb=100,jsnap=50,jdata=1,frq=35
+    )
+fdm.param(par)
+wplot.param(par)
+
+par['xk']=50
+par['xl']=par['nx']-50
+
+par['xsou']=par['ox']+par['nx']/2*par['dx']
+par['zsou']=par['oz']
+
+# ------------------------------------------------------------
+# wavelet
+fdm.wavelet('wav_',par['frq'],par)
+Flow(  'wav', 'wav_','transp')
+Result('wav','window n2=500 |' + fdm.waveplot('',par))
+
+# ------------------------------------------------------------
+# sources coordinates
+fdm.point('ss',par['xsou'],par['zsou'],par) 
+Plot('ss',fdm.ssplot('',par))
+
+# receivers coordinates
+fdm.horizontal('rr',0,par) 
+Plot('rr',fdm.rrplot('',par))
+
+# ------------------------------------------------------------
+# velocity
+Flow('vo',None,
+     '''
+     math output="2.0+0.25*x1"
+     n1=%(nz)d o1=%(oz)g d1=%(dz)g
+     n2=%(nx)d o2=%(ox)g d2=%(dx)g
+     ''' % par)
+
+Plot(  'vo',fdm.cgrey('wantscalebar=y allpos=y bias=2.0 pclip=100',par))
+Result('vo',['vo','ss','rr'],'Overlay')
+
+# ------------------------------------------------------------
+# density
+Flow('ra',None,
+     '''
+     spike nsp=2 mag=+0.5,-0.5
+     n1=%(nz)d o1=%(oz)g d1=%(dz)g k1=101,151 l1=%(nz)d,%(nz)d
+     n2=%(nx)d o2=%(ox)g d2=%(dx)g k2=1,201   l2=200,%(nx)d |
+     add add=2
+     ''' % par)
+Plot(  'ra',fdm.cgrey('wantscalebar=y allpos=y bias=1.5 pclip=100',par))
+Result('ra',['ra','ss','rr'],'Overlay')
+
+Flow('rb','ra','math output=1')
+
+# ------------------------------------------------------------
+# edge taper
+Flow('taper',None,
+     '''
+     spike nsp=1 mag=1
+     n1=%(nx)d d1=%(dx)g o1=%(ox)g k1=%(xk)d l1=%(xl)d
+     n2=%(nt)d d2=%(dt)g o2=%(ot)g |
+     smooth rect1=50
+     ''' % par)
+Result('taper','transp |'+fdm.dgrey('pclip=99',par))
+
+# ------------------------------------------------------------
+# finite-differences modeling
+fdm.awefd('dd','ws','wav','vo','ra','ss','rr','jsnap=1 fsrf=n',par)
+fdm.awefd('do','wo','wav','vo','rb','ss','rr','jsnap=1 fsrf=n',par)
+
+Result('ws','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
+Result('wo','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
+
+# data w/  direct arrivals
+Flow(  'dr0','dd taper',
+       'add mode=p ${SOURCES[1]}')
+
+# data w/o direct arrivals
+Flow(  'dr1','dd do taper',
+       'math r=${SOURCES[0]} d=${SOURCES[1]} t=${SOURCES[2]} output="(r-d)*t"')
+
+for j in range(2):
+    dtag="%d"%j
+    Result('dr'+dtag,'transp |' + fdm.dgrey('pclip=99.9',par))
+
+# ------------------------------------------------------------
+## Construct source wavefields 
+# This step was performed when data was constructed
+# (use this) ws is wavefield with vertically varying density
+# wo is wavefield with constant density=1
+
+# ------------------------------------------------------------
+## Construct receiver wavefields (four total) 
+# wa_reverse - varying density without direct wave 
+# (takes about 30 seconds a pop at 1500 time steps...)
+
+# flip the data along the time axis both with and without direct wave
+# *** ensure that opt=i flag is used to prevent swapping of offset and step
+Flow('dr_reverse','dr1','reverse which=2 opt=i'); # without
+Result('dr_reverse','transp |' + fdm.dgrey('pclip=99.9',par))
+
+# inject data into model
+# *** Make sure the source locations are changed to the locations where 
+#     the data were recorded.
+#     (i.e. the receiver locations used to generate data) 
+
+# varying density (use ra)
+fdm.awefd('dda','wr','dr_reverse','vo','ra','rr','rr','jsnap=1 fsrf=n',par)
+Result('wr','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
+
+# transpose wavefields along time axis again (remove later for speed)
+Flow('wr_reverse','wr','reverse which=4');
+Result('wr_reverse','window j3=%(jsnap)d |'%par + fdm.wgrey('pclip=99.9',par))
+
+# ------------------------------------------------------------
+## 
+### Perform RTM using CIC --> decompose into pyramid (done)
+##
+# ------------------------------------------------------------
+
+Fcic='R_cic'
+Flow('R_cic',['ws','wr'],'sfcicold2d ur=${SOURCES[1]}')
+Result('R_cic',fdm.wgrey('pclip=99.9',par))
+
+nlevel=4
+Flow(Fcic+'_l00',Fcic ,'math output=input')
+Result('R_cic_l00',fdm.wgrey('pclip=99.9',par))
+
+# loop over levels 
+for i in range(0,nlevel):
+
+  # file names
+  tagp  ="_l%02d"%i
+  tagn  ="_l%02d"%(i+1)
+  Fcicp =Fcic+tagp
+  Fcicn =Fcic+tagn
+  Fcicnu=Fcicn+'_u'
+
+  # downscale to move up in pyramid
+  pyr.downscale(Fcicn,Fcicp,1)
+
+  # upscale to original size
+  pyr.upscale(Fcicnu ,Fcicn ,i+1)
+
+  # save result for now
+  Result(Fcicnu,wplot.igrey2d('pclip=99.9',par))
+
+# ------------------------------------------------------------
+## 
+### decompose ws and wr into pyramid  --> perform CIC on each level
+##
+# ------------------------------------------------------------
+
+Fws='ws'
+Fwr='wr'
+Fm ='R_m'
+
+# perform RTM on first level
+# *** This step is redundant but included for completeness, the image is identical to R_cic
+# *** (consider eliminating this step later)
+Flow(Fws+'_l00',Fws,'math output=input')
+Flow(Fwr+'_l00',Fwr,'math output=input')
+Flow(Fm +'_l00',[Fws+'_l00',Fwr+'_l00'],'sfcicold2d ur=${SOURCES[1]}')
+#Flow(Fm +'_l00',['ws','wr'],'sfcicold2d ur=${SOURCES[1]}')
+
+Result(Fws+'_l00',fdm.wgrey('pclip=99.9',par))
+Result(Fwr+'_l00',fdm.wgrey('pclip=99.9',par))
+Result(Fm +'_l00',fdm.wgrey('pclip=99.9',par))
+
+FMN =[Fm+'_l00']
+FMNL=[Fm+'_l00'+'_L']
+
+FMNU =[Fm+'_l00']
+FMNLU=[Fm+'_l00'+'_L']
+
+# loop over levels 
+for i in range(0,nlevel):
+
+  # file names
+  tagp="_l%02d"%i
+  tagn="_l%02d"%(i+1)
+  tagL="_l%02d"%(i)
+  print tagL
+  Fwsp=Fws+tagp
+  Fwrp=Fwr+tagp
+
+  # for Gaussian pyramid
+  Fwsn=Fws+tagn
+  Fwrn=Fwr+tagn
+  Fmn =Fm +tagn
+  Fmnu=Fmn+'_u'
+
+  # for Laplacian pyramid
+  FwsnL=Fws+tagL+'_L'
+  FwrnL=Fwr+tagL+'_L'
+  FmnL =Fm +tagL+'_L'
+  FmnLu=FmnL+'_u'
+
+  # downscale to move up in pyramid
+  pyr.downscale(Fwsn,Fwsp,1)
+  pyr.downscale(Fwrn,Fwrp,1)
+
+  # compute Laplacian pyramid at this level=i
+  Flow(FwsnL,Fwsp,'./sfpyr.x lap=y up=n boundary=0')
+  Flow(FwrnL,Fwrp,'./sfpyr.x lap=y up=n boundary=0')
+
+  # apply cic to this level (Gaussian)
+  Flow(Fmn ,[Fwsn ,Fwrn ],'sfcicold2d ur=${SOURCES[1]}')
+
+  # apply cic to this level (Laplacian)
+  Flow(FmnL,[FwsnL,FwrnL],'sfcicold2d ur=${SOURCES[1]}')
+
+  # upscale images to original size 
+  pyr.upscale(Fmnu ,Fmn ,i+1)
+  pyr.upscale(FmnLu,FmnL,i  )
+  
+
+  # save result for now
+  Result(Fmnu ,wplot.igrey2d('pclip=99.9',par))
+  Result(FmnLu,wplot.igrey2d('pclip=99.9',par))
+
+  # save names of resulting migrated images
+  FMN.append(Fmn)
+  FMNL.append(FmnL)
+
+  FMNU.append(Fmnu)
+  FMNLU.append(FmnLu)
+
+  print(FMN)
+
+# loop over using only the first images 
+FRh='Rh_m'
+FMN_ai=[]
+FMNU_ai=[]
+
+
+
+# remove highest level
+
+# scale beforer removing scales
+for i in range(0,nlevel):
+  Flow(FMN[i]+'_ai' ,FMN[i],'scale axis=12 ') 
+  Flow(FMNU[i]+'_ai',FMNU[i],'scale axis=12 ') 
+  Result(FMN[i]+'_ai',wplot.igrey2d('pclip=99.9',par))
+  Result(FMNU[i]+'_ai',wplot.igrey2d('pclip=99.9',par))
+  # save names of resulting migrated images
+  FMN_ai.append(FMN[i]+'_ai')
+  FMNU_ai.append(FMNU[i]+'_ai')
+
+alpha=[1.00, 1.00, 1.00, 1.00,-1.00]
+pyr.sum_files_weighted('Rh_m_k4',FMNU_ai,alpha)
+
+alpha=[1.00, 1.00, 1.00,-1.00,-1.00]
+pyr.sum_files_weighted('Rh_m_k3',FMNU_ai,alpha)
+
+alpha=[1.00, 1.00,-1.00,-1.00,-1.00]
+pyr.sum_files_weighted('Rh_m_k2',FMNU_ai,alpha)
+
+alpha=[1.00,-1.00,-1.00,-1.00,-1.00]
+pyr.sum_files_weighted('Rh_m_k1',FMNU_ai,alpha)
+
+Result('Rh_m_k4',wplot.igrey2d('pclip=99.9',par))
+Result('Rh_m_k3',wplot.igrey2d('pclip=99.9',par))
+Result('Rh_m_k2',wplot.igrey2d('pclip=99.9',par))
+Result('Rh_m_k1',wplot.igrey2d('pclip=99.9',par))
+
+#Plot('Rh_m_k4',wplot.igrey2d('pclip=99.9',par))
+#Plot('Rh_m_k3',wplot.igrey2d('pclip=99.9',par))
+#Plot('Rh_m_k2',wplot.igrey2d('pclip=99.9',par))
+#Plot('Rh_m_k1',wplot.igrey2d('pclip=99.9',par))
+
+#Result('Rh_m_ka','Rh_m_k4 Rh_m_k3 Rh_m_k2 Rh_m_k1','SideBySideAniso')
+#Result('Rh_m_ka','Rh_m_k4 Rh_m_k3 Rh_m_k2 Rh_m_k1','OverUnderAniso')
+#Result('Rh_m_ka','Rh_m_k4 Rh_m_k3 Rh_m_k2 Rh_m_k1','OverUnderIso')
+
+
+
+
+
+
+#
+#  # save names of resulting migrated images
+#  FMN_ai.append(FMN[i]+'_ai')
+#  FMNU_ai.append(FMNU[i]+'_ai')
+#pyr.sum_files('Rh_m_k3',FMNU_ai)
+#Result('Rh_m_k3',wplot.igrey2d('pclip=99.9',par))
+#
+#
+#pyr.collapse(FRh,FMN_ai,1)
+#Result(FRh,wplot.igrey2d('pclip=99.9',par))
+#
+#pyr.sum_files_weighted('test12',FMNU_ai,alpha)
+
+# ------------------------------------------------------------
+
+# Placeholder results
+
+#varying density
+#Flow('Ra01','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra02','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra11','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Ra12','Rtemp','math x=${SOURCES[0]} output=x')
+
+#constant density
+#Flow('Rb01','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb02','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb11','Rtemp','math x=${SOURCES[0]} output=x')
+#Flow('Rb12','Rtemp','math x=${SOURCES[0]} output=x')
+
+#plot
+#Result('R_cic',fdm.wgrey('pclip=99.9',par))
+
+
+End()

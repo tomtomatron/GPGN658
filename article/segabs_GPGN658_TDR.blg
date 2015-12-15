@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/MacPorts 2015_7)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: segabs_GPGN658_TDR.aux
+The style file: seg.bst
+Database file #1: mybib.bib
+I was expecting a `,' or a `}'---line 17 of file mybib.bib
+ :   
+ :   chapter={7.1: Wavelets and Multiresolution Processing}
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+You've used 2 entries,
+            2639 wiz_defined-function locations,
+            708 strings with 6244 characters,
+and the built_in function-call counts, 748 in all, are:
+= -- 78
+> -- 25
+< -- 1
++ -- 8
+- -- 8
+* -- 59
+:= -- 136
+add.period$ -- 2
+call.type$ -- 2
+change.case$ -- 14
+chr.to.int$ -- 2
+cite$ -- 2
+duplicate$ -- 27
+empty$ -- 58
+format.name$ -- 10
+if$ -- 151
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 3
+newline$ -- 10
+num.names$ -- 6
+pop$ -- 14
+preamble$ -- 1
+purify$ -- 14
+quote$ -- 0
+skip$ -- 20
+stack$ -- 0
+substring$ -- 55
+swap$ -- 1
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 10
+warning$ -- 0
+while$ -- 6
+width$ -- 0
+write$ -- 24
+(There was 1 error message)
